@@ -3,4 +3,5 @@ import pygame as pg
 
 
 # Window dimensions
-WIN_RES = pg.Vector2(800, 600)
+win_res = pg.Vector2(800, 600)
+tick_rate = 120  # Target tick rate for the game loop

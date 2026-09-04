@@ -3,37 +3,19 @@ import sys
 import array
 import moderngl as mgl
 from settings import *
+from shaders import *
+from engine import game_engine
+from player import Player
 
-class game_engine():
-    def __init__(self):
-        pg.init()
-        self.clock = pg.time.Clock()
-        self.delta_time = 0.0
-        self.running = True
-
-    def update(self):
-        self.delta_time = self.clock.tick()
-        self.time = pg.time.get_ticks() * 0.001  # Convert milliseconds to seconds
-        pg.display.set_caption(f"FPS: {self.clock.get_fps():.0f}")
-
-    def handle_events(self):
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                self.running = False
-
-    def run(self):
-        while self.running:
-            self.handle_events()
-            self.update()
-        pg.quit()
-        sys.exit()
 
 game = game_engine()
-screen = pg.display.set_mode(WIN_RES, pg.OPENGL | pg.DOUBLEBUF)
-display = pg.Surface((WIN_RES[0], WIN_RES[1]))
+screen = pg.display.set_mode(win_res, pg.OPENGL | pg.DOUBLEBUF)
+#pg.display.toggle_fullscreen()
+display = pg.Surface((win_res[0], win_res[1]))
 img = pg.image.load("my_game/assets/img.png")
 ctx = mgl.create_context()
 
+# Define shaders and create a program
 quad_buffer = ctx.buffer(data=array.array('f', [
     # postion (x, y), texture coordinates (u, v)
     -1.0, 1.0, 0.0, 0.0,  # Top-left
@@ -42,36 +24,11 @@ quad_buffer = ctx.buffer(data=array.array('f', [
     1.0, -1.0, 1.0, 1.0    # Bottom-right
 ]))
 
-vert_shader= '''
-#version 330 core
-
-in vec2 vert;
-in vec2 texcoord;
-out vec2 uvs;
-
-void main() {
-    uvs = texcoord;
-    gl_Position = vec4(vert, 0.0, 1.0);
-}
-'''
-frag_shader = '''
-#version 330 core
-
-in vec2 uvs;
-out vec4 f_color;
-
-uniform sampler2D tex;
-
-void main() {
-    f_color = vec4(texture(tex, uvs).rgb, 1.0);
-}
-'''
-
 program = ctx.program(vertex_shader=vert_shader, fragment_shader=frag_shader)
 render_object = ctx.vertex_array(program, [(quad_buffer, '2f 2f', 'vert', 'texcoord')])
 
+# Function to convert a Pygame surface to a ModernGL texture
 def surface_to_texture(surface):
-    #Convert a Pygame surface to a ModernGL texture.
     tex = ctx.texture(surface.get_size(), 4)
     tex.filter = (mgl.NEAREST, mgl.NEAREST)
     tex.swizzle = 'BGRA'
@@ -79,12 +36,17 @@ def surface_to_texture(surface):
     return tex
 
 
+# Initialize player
+player = Player()
+
+# Main game loop
 while game.running:
     game.handle_events()
+    game.update()
 
     display.fill((0, 0, 0))  # Clear the display with black color
-    display.blit(img, pg.mouse.get_pos())  # Draw the image at the mouse position
-
+    player.draw(display)
+    player.update(game.delta_time)
     frame_texture = surface_to_texture(display)
     frame_texture.use(0)  # Bind the texture to texture unit 0
     program['tex'] = 0  # Set the shader uniform to use texture unit 0
@@ -92,4 +54,4 @@ while game.running:
     pg.display.flip()
     frame_texture.release()  # Release the texture after rendering
 
-    game.clock.tick(120)  # Limit the frame rate to the clock's tick rate
+    
