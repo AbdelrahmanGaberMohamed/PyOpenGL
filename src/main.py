@@ -1,77 +1,95 @@
-import pygame
+import pygame as pg
 import sys
-import time
-import random
-from pygame.locals import *
-from OpenGL.GL import *
-from OpenGL.GLU import *
+import array
+import moderngl as mgl
+from settings import *
 
-
-# Constants
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-
-class Player:
-    _instance = None
-    _initialized = False
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-
+class game_engine():
     def __init__(self):
-        if self._initialized:
-            return
+        pg.init()
+        self.clock = pg.time.Clock()
+        self.delta_time = 0.0
+        self.running = True
 
-        self.pos_x = SCREEN_WIDTH / 2
-        self.pos_y = SCREEN_HEIGHT / 2
-        self.size = 50
-        self.color = (0, 255, 0)  # Green color
-        self.velocity = pygame.Vector2(500, 500)
-        self._initialized = True
+    def update(self):
+        self.delta_time = self.clock.tick()
+        self.time = pg.time.get_ticks() * 0.001  # Convert milliseconds to seconds
+        pg.display.set_caption(f"FPS: {self.clock.get_fps():.0f}")
 
-def main(): 
-    pygame.init()
+    def handle_events(self):
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                self.running = False
 
-    pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), DOUBLEBUF | OPENGL)
-    glClearColor(0, 0, 0, 1.0)
-    gluOrtho2D(0, SCREEN_WIDTH, 0, SCREEN_HEIGHT)
-    glDisable(GL_DEPTH_TEST)
+    def run(self):
+        while self.running:
+            self.handle_events()
+            self.update()
+        pg.quit()
+        sys.exit()
 
-    clock = pygame.time.Clock()
-    running = True
-    # Initialize player
-    player = Player()
-    while running:
-        delta_time = clock.tick(60) / 1000.0
+game = game_engine()
+screen = pg.display.set_mode(WIN_RES, pg.OPENGL | pg.DOUBLEBUF)
+display = pg.Surface((WIN_RES[0], WIN_RES[1]))
+img = pg.image.load("my_game/assets/img.png")
+ctx = mgl.create_context()
 
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                running = False
+quad_buffer = ctx.buffer(data=array.array('f', [
+    # postion (x, y), texture coordinates (u, v)
+    -1.0, 1.0, 0.0, 0.0,  # Top-left
+    1.0, 1.0, 1.0, 0.0,   # Top-right
+    -1.0, -1.0, 0.0, 1.0,  # Bottom-left
+    1.0, -1.0, 1.0, 1.0    # Bottom-right
+]))
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        # Handle player movement
-        keys = pygame.key.get_pressed()
-        if keys[K_LEFT] or keys[K_a]:
-            player.pos_x -= player.velocity.x * delta_time
-        if keys[K_RIGHT] or keys[K_d]:
-            player.pos_x += player.velocity.x * delta_time
-        if keys[K_UP] or keys[K_w]:
-            player.pos_y += player.velocity.y * delta_time
-        if keys[K_DOWN] or keys[K_s]:
-            player.pos_y -= player.velocity.y * delta_time
-        # Here you would add your OpenGL rendering code
-        # Draw the player
-        glColor3f(*player.color)
-        glBegin(GL_QUADS)
-        glVertex2f(player.pos_x - player.size / 2, player.pos_y - player.size / 2)
-        glVertex2f(player.pos_x + player.size / 2, player.pos_y - player.size / 2)
-        glVertex2f(player.pos_x + player.size / 2, player.pos_y + player.size / 2)
-        glVertex2f(player.pos_x - player.size / 2, player.pos_y + player.size / 2)
-        glEnd()
-        pygame.display.flip()
-        
-    pygame.quit()
-if __name__ == "__main__":
-    main()
+vert_shader= '''
+#version 330 core
+
+in vec2 vert;
+in vec2 texcoord;
+out vec2 uvs;
+
+void main() {
+    uvs = texcoord;
+    gl_Position = vec4(vert, 0.0, 1.0);
+}
+'''
+frag_shader = '''
+#version 330 core
+
+in vec2 uvs;
+out vec4 f_color;
+
+uniform sampler2D tex;
+
+void main() {
+    f_color = vec4(texture(tex, uvs).rgb, 1.0);
+}
+'''
+
+program = ctx.program(vertex_shader=vert_shader, fragment_shader=frag_shader)
+render_object = ctx.vertex_array(program, [(quad_buffer, '2f 2f', 'vert', 'texcoord')])
+
+def surface_to_texture(surface):
+    #Convert a Pygame surface to a ModernGL texture.
+    tex = ctx.texture(surface.get_size(), 4)
+    tex.filter = (mgl.NEAREST, mgl.NEAREST)
+    tex.swizzle = 'BGRA'
+    tex.write(surface.get_view('1'))
+    return tex
+
+
+while game.running:
+    game.handle_events()
+
+    display.fill((0, 0, 0))  # Clear the display with black color
+    display.blit(img, pg.mouse.get_pos())  # Draw the image at the mouse position
+
+    frame_texture = surface_to_texture(display)
+    frame_texture.use(0)  # Bind the texture to texture unit 0
+    program['tex'] = 0  # Set the shader uniform to use texture unit 0
+    render_object.render(mode=mgl.TRIANGLE_STRIP)  # Render the quad with the texture
+    pg.display.flip()
+    frame_texture.release()  # Release the texture after rendering
+
+    game.clock.tick(120)  # Limit the frame rate to the clock's tick rate
