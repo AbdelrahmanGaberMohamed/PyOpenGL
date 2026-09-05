@@ -13,7 +13,7 @@ class Player:
     def __init__(self):
         if self._initialized:
             return
-
+        
         self.pos_x = win_res.x / 2
         self.pos_y = win_res.y / 2
         self.size = pg.Vector2(50, 50)
@@ -24,7 +24,7 @@ class Player:
     def draw(self, surface):
         pg.draw.rect(surface, self.color, (self.pos_x, self.pos_y, self.size.x, self.size.y))
 
-    def update(self, delta_time):
+    def move(self, delta_time):
         keys = pg.key.get_pressed()
         if keys[pg.K_w] or keys[pg.K_UP]:
             self.pos_y -= self.velocity.y * delta_time
