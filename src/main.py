@@ -65,6 +65,8 @@ while game.running:
     frame_texture.use(0)  # Bind the texture to texture unit 0
     program['tex'] = 0  # Set the shader uniform to use texture unit 0
     render_object.render(mode=mgl.TRIANGLE_STRIP)  # Render the quad with the texture
+
+    # Track player postion
     
 
     pg.display.flip()
