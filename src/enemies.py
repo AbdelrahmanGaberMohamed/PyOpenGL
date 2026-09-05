@@ -4,7 +4,7 @@ class enemy:
     def __init__(self, pos_x, pos_y):
         self.pos_x = pos_x
         self.pos_y = pos_y
-        self.size = pg.Vector2(5, 5)
+        self.size = pg.Vector2(15, 15)
         self.color = (255, 0, 0)  # Red color
         self.velocity = pg.Vector2(300, 300)
 
