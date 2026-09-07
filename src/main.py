@@ -63,15 +63,14 @@ while game.running:
     game.update()
 
     # Enmeies
- 
     
-
+    
 
     # Display
     display.fill((0, 0, 0))  # Clear the display with black color
     player.draw(display)
     enemy1.draw(display)
-    enemy1.trace_player((player.pos_x, player.pos_y), game.delta_time)
+    enemy1.move((player.pos_x, player.pos_y), game.delta_time)
     draw_ui(display, stars, elapsed_time)
     frame_texture = surface_to_texture(display)
     frame_texture.use(0)  # Bind the texture to texture unit 0
