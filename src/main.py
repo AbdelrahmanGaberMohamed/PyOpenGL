@@ -1,18 +1,22 @@
+from random import random
+
 import pygame as pg
 import sys
 import array
 import moderngl as mgl
 from settings import *
 from shaders import *
-from engine import game_engine
-from player import Player
+from engine import *
+from player import *
+from ui import *
+from enemies import *
 
 
 game = game_engine()
 screen = pg.display.set_mode(win_res, pg.OPENGL | pg.DOUBLEBUF)
 #pg.display.toggle_fullscreen()
 display = pg.Surface((win_res[0], win_res[1]))
-img = pg.image.load("my_game/assets/img.png")
+#img = pg.image.load("my_game/assets/img.png")
 ctx = mgl.create_context()
 
 # Define shaders and create a program
@@ -39,18 +43,43 @@ def surface_to_texture(surface):
 # Initialize player
 player = Player()
 
+# Generate random postions for drawing a starry background
+stars = []
+for i in range(100):  # Create 100 stars with random positions
+    x = random.randint(0, display.get_width())
+    y = random.randint(0, display.get_height())
+    stars.append(pg.Rect(x, y, 1, 1))
+
+# Intiate enemies
+enemy1 = enemy(random.randint(0, display.get_width()), random.randint(0, display.get_height()))
+
+
+elapsed_time = 0
+
 # Main game loop
 while game.running:
+    elapsed_time += game.delta_time
     game.handle_events()
     game.update()
 
+    # Enmeies
+    
+    
+
+    # Display
     display.fill((0, 0, 0))  # Clear the display with black color
     player.draw(display)
-    player.update(game.delta_time)
+    enemy1.draw(display)
+    enemy1.move((player.pos_x, player.pos_y), game.delta_time)
+    draw_ui(display, stars, elapsed_time)
     frame_texture = surface_to_texture(display)
     frame_texture.use(0)  # Bind the texture to texture unit 0
     program['tex'] = 0  # Set the shader uniform to use texture unit 0
     render_object.render(mode=mgl.TRIANGLE_STRIP)  # Render the quad with the texture
+
+
+    player.move(game.delta_time)
+
     pg.display.flip()
     frame_texture.release()  # Release the texture after rendering
 
