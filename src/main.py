@@ -1,7 +1,5 @@
 from random import random
-
 import pygame as pg
-import sys
 import array
 import moderngl as mgl
 from settings import *
@@ -50,7 +48,7 @@ for i in range(100):  # Create 100 stars with random positions
     y = random.randint(0, display.get_height())
     stars.append(pg.Rect(x, y, 1, 1))
 
-# Intiate enemies
+# Generate random spawn points of the screen
 def random_spawn():
     x = random.randint(0, display.get_width())
     x = random.randint(0,3)
@@ -69,26 +67,9 @@ def random_spawn():
             x = display.get_width()
             y = random.randint(0, display.get_height())
     return pg.Vector2(x, y)
-    ''''
-    match x:
-        case 0:
-            y = random.randint(0, display.get_height())
-        case _:
-            y = random.randint(display.get_height(), display.get_height() + 5)
-            x = random.randint(0, display.get_width())
-    return pg.Vector2(x,y)
 
-    match x:
-        case 1: 
-            return pg.Vector2(x1, y)
-        case 2: 
-            return pg.Vector2(x2, y)
 
-'''
-spawn_point = random_spawn()
-enemy1 = Enemy(spawn_point.x, spawn_point.y)
-
-# 
+# Vars
 elapsed_time = 0
 enemy_spawn_rate = 1
 enemies = []
