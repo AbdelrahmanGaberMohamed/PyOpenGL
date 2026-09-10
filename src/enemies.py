@@ -1,6 +1,6 @@
 import pygame as pg
 
-class enemy:
+class Enemy:
     def __init__(self, pos_x, pos_y):
         self.pos_x = pos_x
         self.pos_y = pos_y
@@ -26,7 +26,7 @@ class enemy:
         self.pos_x += self.velocity.x * delta_time
         self.pos_y += self.velocity.y * delta_time
 
-    def trace_player(self, player_pos, delta_time):
+    def track_player(self, player_pos, delta_time):
         direction = pg.Vector2(player_pos[0] - self.pos_x, player_pos[1] - self.pos_y)
         if direction.length() > 0:
             direction = direction.normalize()

@@ -2,7 +2,7 @@ import pygame as pg
 import sys
 from settings import *
 
-class game_engine():
+class Game_Engine():
     def __init__(self):
         pg.init()
         self.clock = pg.time.Clock()
