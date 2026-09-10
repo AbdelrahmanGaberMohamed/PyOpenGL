@@ -95,7 +95,7 @@ while game.running:
         enemies.append(Enemy(spawn.x, spawn.y))
     for enemy in enemies:
         enemy.draw(display)
-        enemy.track_player((player.pos_x, player.pos_y), game.delta_time)
+        enemy.move((player.pos_x, player.pos_y), game.delta_time)
 
     
 

@@ -8,23 +8,22 @@ class Enemy:
         self.color = (255, 0, 0)  # Red color
         self.velocity = pg.Vector2(150, 150)
         self.launch = False # Flag to determine if tragectory has been calcualted
+        self.direction = pg.Vector2(0, 0)
 
     def draw(self, surface):
         pg.draw.rect(surface, self.color, (self.pos_x, self.pos_y, self.size.x, self.size.y))
 
 
     def move(self, player_pos, delta_time):
-        if self.launch:
-            pass
-        else:
+        if not self.launch:
             self.launch = True
             direction = pg.Vector2(player_pos[0] - self.pos_x, player_pos[1] - self.pos_y)
-            if direction.length() > 0:
-                direction = direction.normalize()
-                self.pos_x += direction.x * self.velocity.x * delta_time
-                self.pos_y += direction.y * self.velocity.y * delta_time
-        self.pos_x += self.velocity.x * delta_time
-        self.pos_y += self.velocity.y * delta_time
+            #if direction.length() > 0:
+            self.direction = direction.normalize()
+            #self.pos_x += direction.x * self.velocity.x * delta_time
+            #self.pos_y += direction.y * self.velocity.y * delta_time
+        self.pos_x += self.velocity.x * self.direction.x * delta_time
+        self.pos_y += self.velocity.y * self.direction.y * delta_time
 
     def track_player(self, player_pos, delta_time):
         direction = pg.Vector2(player_pos[0] - self.pos_x, player_pos[1] - self.pos_y)
