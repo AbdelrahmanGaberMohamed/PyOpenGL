@@ -52,15 +52,39 @@ for i in range(100):  # Create 100 stars with random positions
 
 # Intiate enemies
 def random_spawn():
-    x1 = random.randint(-20 , 0)
-    x2 = random.randint(display.get_width() , display.get_width() + 5)
-    y = random.randint(0, display.get_height())
-    x = random.randint(1,2)
+    x = random.randint(0, display.get_width())
+    x = random.randint(0,3)
+    y = random.randint(0,3)
+    match y:
+        case 0:
+            x = random.randint(0, display.get_width())
+            y = 0
+        case 1:
+            x = random.randint(0, display.get_width())
+            y = display.get_height()
+        case 2:
+            x = 0
+            y = random.randint(0, display.get_height())
+        case 3:
+            x = display.get_width()
+            y = random.randint(0, display.get_height())
+    return pg.Vector2(x, y)
+    ''''
+    match x:
+        case 0:
+            y = random.randint(0, display.get_height())
+        case _:
+            y = random.randint(display.get_height(), display.get_height() + 5)
+            x = random.randint(0, display.get_width())
+    return pg.Vector2(x,y)
+
     match x:
         case 1: 
             return pg.Vector2(x1, y)
         case 2: 
             return pg.Vector2(x2, y)
+
+'''
 spawn_point = random_spawn()
 enemy1 = Enemy(spawn_point.x, spawn_point.y)
 
